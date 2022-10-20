@@ -4,14 +4,14 @@
 #include <assert.h>
 
 
-/*  Multiply dense matrix a by sparse vector x
+/* Multiply dense matrix a by sparse vector x
 
-    m, n:   dense matrix a is of shape m-by-n
-    a:      dense matrix
-    cx:     coordinates in sparse vector x with non-zero values
-    x:      non-zero values in sparse vector x
-    nnz_x:  num non-zeros in length-n sparse vector x
-    w:      length-m dense vector for result
+   m, n:   matrix shape m-by-n
+   a:      dense matrix
+   cx:     coordinates in sparse vector x with non-zero values
+   x:      non-zero values in sparse vector x
+   nnz_x:  num non-zeros in length-n sparse vector x
+   w:      length-m dense vector for result
 */
 void mv(int m, int n, float *a, int *cx, float*x, int nnz_x,
         float *w)
@@ -24,19 +24,20 @@ void mv(int m, int n, float *a, int *cx, float*x, int nnz_x,
   {
     // cx[h]-th column of a is to be multiplied
     j = cx[h];
+    // multiply the column by a scalar
+    // NOTE: SIMD-parallelizable
     for (i = 0; i < m; ++i)
       w[i] += a[j * m + i] * x[h];
   }
-
 }
 
 /* Take ReLU and store result as sparse vector
 
-    m:      length of input dense vector
-    w:      input dense vector
-    cy:     coordinates in sparse vector y
-    y:      non-zero values in sparse vector y
-    nnz_y:  num non-zeros in length-m sparse vector y
+   m:      length of input dense vector
+   w:      input dense vector
+   cy:     coordinates in sparse vector y
+   y:      non-zero values in sparse vector y
+   nnz_y:  num non-zeros in length-m sparse vector y
 */
 void relu(int m, float *w, int *cy, float *y, int *nnz_y)
 {
@@ -52,12 +53,13 @@ void relu(int m, float *w, int *cy, float *y, int *nnz_y)
   *nnz_y = h;
 }
 
-int main ( )
+int main()
 {
   float *a, *x, *y;
   int *cx, *cy, nnz_x, nnz_y;
   int m, n;
 
+  // matrix a is square here
   m = 3; /* the number of rows */
   n = 3; /* the number of columns */
 
@@ -81,7 +83,7 @@ int main ( )
   a[2 * m + 1] = 1;
   a[2 * m + 2] = 2;
 
-  /* The elemetns of x and y */
+  /* The elements of x */
   nnz_x = 2;
   cx[0] = 0;
   cx[1] = 1;
@@ -114,11 +116,12 @@ int main ( )
       printf(" y%d = %f\n", cy[h], y[h]);
   }
 
-   free(a);
-   free(x);
-   free(y);
-   free(cx);
-   free(cy);
-   free(w);
-   return 0;
+  free(a);
+  free(x);
+  free(y);
+  free(cx);
+  free(cy);
+  free(w);
+
+  return 0;
 }
